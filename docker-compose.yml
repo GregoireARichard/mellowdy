@@ -2,7 +2,7 @@ version: "3"
 services:
     project-php:
         image: "pauulog/php-docker-dev:latest"
-        container_name: "project"
+        container_name: "project-php"
         links:
           - "project-mariadb:mariadb.host"
         volumes:
@@ -13,7 +13,7 @@ services:
         image: "nginx:1-alpine"
         container_name: "project-nginx"
         links:
-          - "project:project.host"
+          - "project-php:project-php.host"
         ports:
           - 8080:80
         volumes:
