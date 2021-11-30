@@ -7,10 +7,13 @@ use App\Entity\User;
 use App\Service\NotionService;
 use App\Service\SpotifyService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\Exception\ClientException;
+use Symfony\Component\HttpClient\Exception\ServerException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -55,7 +58,7 @@ class DefaultController extends AbstractController
     public function oauth(): Response
     {
        $client_id = '47fcde357cd7454088ed5b0bf054c823';
-       $location = 'http://127.0.0.1:8080/&exchange_token';
+       $location = 'http://127.0.0.1:8080/exchange_token';
        $scope = 'user-read-playback-state playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public';
 
        $oauth_string = sprintf(
@@ -72,26 +75,29 @@ class DefaultController extends AbstractController
      */
     public function exchange_token(Request $request): Response{
         $authorization_code = $request->get('code');
+
         try {
+            $basicAuth = base64_encode(sprintf('%s:%s',  '47fcde357cd7454088ed5b0bf054c823', 'e537d899f2b84318942fea52e41d9428'));
             $header = [
-                'Authorization' => 'basic' . base64_encode('47fcde357cd7454088ed5b0bf054c823'. ':' . 'e537d899f2b84318942fea52e41d9428'),
-                'Content-Type' => 'application/x-www-form-urlencode',
+                'Authorization' => sprintf('Basic %s', $basicAuth),
+                'Content-Type' => 'application/x-www-form-urlencoded',
             ];
             $body = [
                 'client_id' => '47fcde357cd7454088ed5b0bf054c823',
                 'client_secret' => 'e537d899f2b84318942fea52e41d9428',
                 'code' => $authorization_code,
                 'grant_type' => 'authorization_code',
-                'redirection_uri' =>'localhost:8080/exchange_token',
+                'redirect_uri' =>'http://127.0.0.1:8080/exchange_token',
             ];
 
             $response = $this->httpClient->request(
                 'POST',
                 'https://accounts.spotify.com/api/token',
-                ['header' => $header , 'body' => $body ]
+                ['headers' => $header , 'body' => $body ]
 
             );
-        } catch (\Exception $e) {
+            $json_response = json_decode($response->getContent(), true);
+        } catch (ClientException $e) {
             $this->logger->error(
                 sprintf(
                     'Error : %s',
@@ -101,13 +107,8 @@ class DefaultController extends AbstractController
             return $this->json($e->getMessage());
         }
 
-        $json_response = json_decode($response->getContent(), true);
-        $token = $json_response['access_token'];
 
-        $filesystem = new Filesystem();
-        $filesystem->dumpFile(sprintf('%s/%s', $this->getParameter('kernel.project_dir'), 'private/token'), $token);
-
-        return $this->json('oAuth login successful.');
+        return $this->json($json_response);
 
     }
 
