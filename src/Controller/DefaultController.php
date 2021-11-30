@@ -56,11 +56,13 @@ class DefaultController extends AbstractController
     {
        $client_id = '47fcde357cd7454088ed5b0bf054c823';
        $location = 'http://127.0.0.1:8080/&exchange_token';
+       $scope = 'user-read-playback-state playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public';
 
        $oauth_string = sprintf(
-           'https://accounts.spotify.com/authorize?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-playback-state',
+           'https://accounts.spotify.com/authorize?client_id=%s&response_type=code&redirect_uri=%s&scope=%s',
            $client_id,
-           $location
+           $location,
+           $scope
         );
         return $this->redirect($oauth_string);
     }
