@@ -22,6 +22,12 @@ class Playlist
      */
     private $maxLimit;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=MellowUser::class, inversedBy="Playlists")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $Owner;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -35,6 +41,18 @@ class Playlist
     public function setMaxLimit(int $maxLimit): self
     {
         $this->maxLimit = $maxLimit;
+
+        return $this;
+    }
+
+    public function getOwner(): ?MellowUser
+    {
+        return $this->Owner;
+    }
+
+    public function setOwner(?MellowUser $Owner): self
+    {
+        $this->Owner = $Owner;
 
         return $this;
     }

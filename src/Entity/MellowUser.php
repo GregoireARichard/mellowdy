@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MellowUserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -22,6 +24,22 @@ class MellowUser
      */
     private $Username;
 
+
+    /**
+     * @ORM\OneToMany(targetEntity=Playlist::class, mappedBy="Owner", orphanRemoval=true)
+     */
+    private $Playlists;
+
+    /**
+     * @ORM\Column(type="text")
+     */
+    private $UserToken;
+
+    public function __construct()
+    {
+        $this->Playlists = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -35,6 +53,49 @@ class MellowUser
     public function setUsername(string $Username): self
     {
         $this->Username = $Username;
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection|Playlist[]
+     */
+    public function getPlaylists(): Collection
+    {
+        return $this->Playlists;
+    }
+
+    public function addPlaylist(Playlist $playlist): self
+    {
+        if (!$this->Playlists->contains($playlist)) {
+            $this->Playlists[] = $playlist;
+            $playlist->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlaylist(Playlist $playlist): self
+    {
+        if ($this->Playlists->removeElement($playlist)) {
+            // set the owning side to null (unless already changed)
+            if ($playlist->getOwner() === $this) {
+                $playlist->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUserToken(): ?string
+    {
+        return $this->UserToken;
+    }
+
+    public function setUserToken(string $UserToken): self
+    {
+        $this->UserToken = $UserToken;
 
         return $this;
     }
