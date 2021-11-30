@@ -12,7 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method NotionPage[]    findAll()
  * @method NotionPage[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class NotionPageRepository extends ServiceEntityRepository
+class SpotifyPageRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

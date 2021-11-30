@@ -7,7 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class NotionService
+
+class SpotifyService
 {
     /**
      * @var EntityManagerInterface
@@ -35,11 +36,11 @@ class NotionService
     public function getNotionPage(): array
     {
 
-        $notionBaseUrl = $this->parameterBag->get('notion_base_url');
-        $notionToken = $this->parameterBag->get('notion_token');
+        $spotifyBaseUrl = $this->parameterBag->get('base_url');
+        $client_id = $this->parameterBag->get('client_id');
 
-        $notionSearchUrl = sprintf('%s/search', $notionBaseUrl);
-        $authorizationHeader = sprintf('Bearer %s', $notionToken);
+        /*$notionSearchUrl = sprintf('%s/search', $spotifyBaseUrl);
+        $authorizationHeader = sprintf('Bearer %s', $client_id);
 
         $pages = $this->httpClient->request('POST', $notionSearchUrl, [
             'body' => [
@@ -51,7 +52,7 @@ class NotionService
             ],
         ]);
 
-        return json_decode($pages->getContent(), true);
+        return json_decode($pages->getContent(), true);*/
     }
     public function storeNotionPage(): array {
         $pages = $this->getNotionPage();
