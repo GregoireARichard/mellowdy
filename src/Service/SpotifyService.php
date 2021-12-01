@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\NotionPage;
+use App\Repository\MellowUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -33,21 +34,40 @@ class SpotifyService
         $this->httpClient = $httpClient;
         $this->parameterBag = $parameterBag;
     }
+    public function getSpotifyMe(): array {
+        $requestMe = $this->httpClient->request('GET','https://api.spotify.com/v1/me',[
+            'headers' => [
+                'Content-Type' => 'application/json',
+                 'Accept' => 'application/json',
+                'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S']
+        ]);
+        return json_decode($requestMe->getContent(), true);
 
     public function storeUserToken(): string
     {
-        $token = $this->getSpotifyMe();
-        $existingToken = $this->entityManager->getRepository(MellowUser::class)->findOneByUserToken($token);
+        $token = $this->getSpotifyMe().get("access_token");
 
-        if (null == $existingNotionPage) 
-        {
-            $this->entityManager->persist($notionPage);
-            $this->entityManager->flush();
-        }
+        $this->entityManager->persist($token);
+        $this->entityManager->flush();
 
-        return $notionPages;
+        return $token;
+    }
+
+    public function getSpotifySearch(): array {
+        $requestSearch = $this->httpClient->request('GET','https://api.spotify.com/v1/search?type=track,artist&include_external=audio', [
+            'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S',
+            'Content-Type' => 'application/json',
+
+        ]);
     }
     
+
+
+
+
+
+
+
     public function getNotionPage(): array
     {
 
