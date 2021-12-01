@@ -38,7 +38,7 @@ class DefaultController extends AbstractController
     ParameterBagInterface  $parameterBag)
 
     {
-        $this->SpotifyService = $spotifyService;
+        $this->spotifyService = $spotifyService;
         $this->httpClient = $httpClient;
         $this->logger = $logger;
         $this->parameterBag = $parameterBag;
@@ -50,7 +50,10 @@ class DefaultController extends AbstractController
      */
     public function index(): Response
     {
-        return $this->json('hello world.');
+        $return = $this->spotifyService->getSpotifyMe();
+        $this->spotifyService->getSpotifyPlaylist();
+        return $this->json(substr($return['id'], 0, 255));
+
     }
     /**
      * @Route("/oauth", name="oauth")
@@ -75,16 +78,16 @@ class DefaultController extends AbstractController
      */
     public function exchange_token(Request $request): Response{
         $authorization_code = $request->get('code');
-
+        $client_secret = $this->parameterBag->get('client_secret');
         try {
-            $basicAuth = base64_encode(sprintf('%s:%s',  '47fcde357cd7454088ed5b0bf054c823', 'e537d899f2b84318942fea52e41d9428'));
+            $basicAuth = base64_encode(sprintf('%s:%s',  '47fcde357cd7454088ed5b0bf054c823', $client_secret));
             $header = [
                 'Authorization' => sprintf('Basic %s', $basicAuth),
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ];
             $body = [
                 'client_id' => '47fcde357cd7454088ed5b0bf054c823',
-                'client_secret' => 'e537d899f2b84318942fea52e41d9428',
+                'client_secret' => $client_secret,
                 'code' => $authorization_code,
                 'grant_type' => 'authorization_code',
                 'redirect_uri' =>'http://127.0.0.1:8080/exchange_token',
@@ -108,7 +111,8 @@ class DefaultController extends AbstractController
         }
 
 
-        return $this->json($json_response);
+        //return $this->json($json_response);
+        return $this->redirect('/');
 
     }
 

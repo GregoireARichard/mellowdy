@@ -20,7 +20,7 @@ class MellowUserRepository extends ServiceEntityRepository
     }
 
     // /**
-    //  * @return MellowUser[] Returns an array of MellowUser objects
+    //  * @return MellowUser[] Returns an array of daMellowUser objects
     //  */
     /*
     public function findByExampleField($value)

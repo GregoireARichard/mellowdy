@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\NotionPage;
+use App\Repository\MellowUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -23,7 +24,6 @@ class SpotifyService
      * @var ParameterBagInterface
      */
     private $ParameterBagInterface;
-
     public function __construct(
         EntityManagerInterface $entityManager,
         HttpClientInterface $httpClient,
@@ -33,6 +33,43 @@ class SpotifyService
         $this->httpClient = $httpClient;
         $this->parameterBag = $parameterBag;
     }
+    public function getSpotifyMe(): array {
+       $requestMe = $this->httpClient->request('GET','https://api.spotify.com/v1/me',[
+           'headers' => [
+               'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+               'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S']
+       ]);
+       return json_decode($requestMe->getContent(), true);
+    }
+    /*public function getSpotifyPlaylist(): array{
+        $returnPl = "grégmusique";
+        //$user_id = $this->substr($returnPl['id'], 0, 255));
+        $sprintUser = sprintf('https://api.spotify.com/v1/users/%s/playlists', $returnPl);
+        $requestPlaylist = $this->httpClient->request('POST', $sprintUser,[
+            'headers' =>[
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S'],
+            'data' => [
+                'name' => 'new Playlist',
+                'description' =>' New playlist description',
+                'public'=> false
+            ]
+        ]);
+        return json_decode($requestPlaylist->getContent(),true);
+    }*/
+    public function getSpotifySearch(): array {
+        $requestSearch = $this->httpClient->request('GET','https://api.spotify.com/v1/search?type=track,artist&include_external=audio', [
+            'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S',
+            'Content-Type' => 'application/json',
+
+        ]);
+    }
+   /* public function StoreTokenUser(): array {
+        $requestMe = $this->getSpotifyMe();
+        $spotifyToken = [];
+        $existingToken = $this->entityManager->getRepository(MellowUserRepository::class)->findOneByNotionId($page['id']);
+    }*/
     public function getNotionPage(): array
     {
 
@@ -54,7 +91,7 @@ class SpotifyService
 
         return json_decode($pages->getContent(), true);*/
     }
-    public function storeNotionPage(): array {
+    public function StoreToken(): array {
         $pages = $this->getNotionPage();
 
         $notionPages = [];
@@ -84,6 +121,7 @@ class SpotifyService
         }
 
         $this->entityManager->flush();
+
 
         return $notionPages;
     }
