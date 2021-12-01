@@ -42,6 +42,7 @@ class SpotifyService
                 'Authorization' => 'Bearer BQDbXEReEaDB2BjRKt3cJ8a6wpCYQIxoLHBhIDSVLWqkU1qcBooMT27UeExvuFfN_TkGdXHmNI7txwltixmOORXyYLOL4s_C9KwK9Yae4ryp0evZh3Di33Dw2JyRSl27Q9pGM93mHassUUolwfu_gwd6RjL0wnhS_iQ9_ANl58r1CfL4vf3WO96BX7LmGjeqIWYRJJXT-IeAIU0YXjNWEc7hxS6_7F1S']
         ]);
         return json_decode($requestMe->getContent(), true);
+    }
 
     public function storeUserToken(): string
     {
