@@ -33,6 +33,21 @@ class SpotifyService
         $this->httpClient = $httpClient;
         $this->parameterBag = $parameterBag;
     }
+
+    public function storeUserToken(): string
+    {
+        $token = $this->getSpotifyMe();
+        $existingToken = $this->entityManager->getRepository(MellowUser::class)->findOneByUserToken($token);
+
+        if (null == $existingNotionPage) 
+        {
+            $this->entityManager->persist($notionPage);
+            $this->entityManager->flush();
+        }
+
+        return $notionPages;
+    }
+    
     public function getNotionPage(): array
     {
 
