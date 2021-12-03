@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\MellowUser;
 use App\Entity\NotionPage;
 use App\Entity\User;
 //use App\Repository\MellowUserRepository;
 use App\Service\NotionService;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\SpotifyService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,50 +29,72 @@ class DefaultController extends AbstractController
     /**
      * @var SpotifyService
      */
-    private $notionService;
+    private $spotifyService;
+
     /**
      * @var HttpClientInterface
      */
     private $httpClient;
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
+
+    /**
+     * @var ParameterBagInterface
+     */
     private $parameterBag;
+
+    /**
+     * @var EntityManagerInterface
+     */
     private $entityManager;
+
+    /**
+     * @var UserService
+     */
+    private  $userService;
+
+
     public function __construct(SpotifyService $spotifyService,
     HttpClientInterface $httpClient,
     LoggerInterface $logger,
     ParameterBagInterface  $parameterBag,
-    EntityManagerInterface $entityManager)
-
-
+    EntityManagerInterface $entityManager,
+    UserService $userService)
     {
         $this->spotifyService = $spotifyService;
         $this->httpClient = $httpClient;
         $this->logger = $logger;
         $this->parameterBag = $parameterBag;
         $this->entityManager = $entityManager;
+        $this->userService = $userService;
 
     }
 
     /**
      * @Route("/", name="default")
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $token = 'Bearer BQDuTVWWu3vXxcstb4emlSuw6kMwMWfvoa5rrn9YFS8gapcmUlQ4Obf2MHousID2A40fJcLrfGEvSF_riiPxyVY8FKagxi7wGlK_YjVR2GXXoYSa5B9kOAB1GRgB4TDnH15pIVIFxP-DsGNeKZDcm_QFXC1uxBAQybbUSdYA61rYs0aLIfta29jjQCOalQi54gTKpYAjBe6oUP6De2yX9glx2XV2eMyt';
-       // $fetch = $this->entityManager->getRepository(MellowUserRepository::class)->find(['user_token']);
-       // $token = $fetch->getUserToken();
-        //$this->spotifyService->getSpotifyReco($token);
-        //$return = $this->spotifyService->getSpotifyReco($token);
+        $request->headers->set('Authorization', 'Bearer 4268616fd1f7c46f445d009c28cbf31025fc127d');
+        /** @var MellowUser $user */
+        $user = $this->userService->getUserFromRequest($request);
+        if (null === $user) {
+            return new Response('Unauthorized', 401);
+        }
+        //$return = $this->spotifyService->getSpotifyReco($user);
+       // $return = $this->spotifyService->getSpotifyReco($user->getUserToken());
 
-        $this->spotifyService->getSpotifyPlaylist($token);
-        //$this->spotifyService->getSpotifySearch();
+        //$playlists = $this->spotifyService->getSpotifyPlaylist($user);
+        //$return = $this->spotifyService->getSpotifySearch($user->getUserToken());
         //$this->spotifyService->storeUser();
-       // $this->spotifyService->getSpotifyAddItem();
+
+         $return = $this->spotifyService->getSpotifyAddItem($user, $user->getUserToken());
         //$this->spotifyService->getSpotifyReco($token);
-        //return $this->json($return);
         //return $this->json($return['tracks']['items'][0]['uri']);
-       //$returnq = $this->spotifyService->getSpotifyAddItem();
-       //return $this->json($returnq);
+       //$returnq = $this->spotifyService->getSpotifyAddItem($user->getUserToken());
+       return $this->json($return);
 
 
     }
@@ -149,11 +173,10 @@ class DefaultController extends AbstractController
         if (null === $user) {
             return new Response('Unauthorized', 401);
         }
-
         $user->getToken();
         $this->spotifyService->getSpotifyMe($user->getToken());
 
-        return $this->json('Notion pages saved.');
+        return $this->json('');
     }
 
     /**

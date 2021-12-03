@@ -43,81 +43,88 @@ class SpotifyService
                 'Authorization' => sprintf('Bearer %s', $userToken)]
         ]);
     }
-    public function postHttpClient($userToken, $route){
-        return $this->httpClient->request('POST', sprintf('https://api.spotify.com/v1/%s', $route),[
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-                'Authorization' => sprintf('Bearer %s', $userToken)]
-        ]);
-    }
 
     public function getSpotifyMe(string $userToken): array {
        $requestMe = $this->getHttpClient($userToken,'me');
        return json_decode($requestMe->getContent(), true);
     }
-    public function getSpotifySearch(string $userToken):array {
-        $track = 'tightly';
-        $artist = 'kosheen';
-        $limit = "10";
+
+    public function getSpotifySearch(string $userToken):string {
+        $track = 'Thriller';
+        $artist = 'Michael Jackson';
+        $limit = "2";
         $searchLink = sprintf("search?q=%s %s&type=track&market=FR&limit=%s",$artist,$track,$limit);
         $requestSearch = $this->getHttpClient($userToken,$searchLink);
-        return json_decode($requestSearch->getContent(), true);
+
+        $query = json_decode($requestSearch->getContent(), true);
+        $artistSeeds = $query['tracks']['items'][0]['artists']['0']['id'];
+        $trackSeed = $query['tracks']['items'][0]['id'];
+        $associatedQuery = sprintf('seed_artists=%s&seed_tracks=%s',$artistSeeds,$trackSeed);
+        return $associatedQuery;
     }
 
-    public function getSpotifyPlaylist( string $userToken): array{
-        $returnPl =  $this->entityManager->getRepository(MellowUser::class)->find('Username');
-        $fetchUsername= $this->getUsername();
-        $sprintUser = sprintf('https://api.spotify.com/v1/users/%s/playlists', $fetchUsername);
-        $data = '{"name": "New Playlist", "description": "Your Mellowdy playlist ;)", "public": true}';
-        $createLink = sprintf('/users/%s/playlists',$returnPl);
+    public function getSpotifyPlaylist( MellowUser $user): array{
+
+        $sprintUser = sprintf('https://api.spotify.com/v1/users/%s/playlists', $user->getUsername());
+        $data = '{"name": "Your Mellowdy Playlist", "description": "Your Mellowdy playlist ;)", "public": true}';
         $requestPlaylist = $this->httpClient->request('POST', $sprintUser,[
             'headers' =>[
                 'Content-Type' => 'application/json',
-                'Authorization' => sprintf('Bearer %s', $userToken)
+                'Authorization' => sprintf('Bearer %s', $user->getUserToken())
             ],
-            'body' => $data
+            'json' => $data
         ]);
         return json_decode($requestPlaylist->getContent(),true);
     }
-    public function getSpotifyReco(string $userToken): array {
+    public function getSpotifyReco(string $userToken): string {
         $limit = '10';
         $artistSeed = '3xWktqKQxBAu4LXqLufJwW';
         $trackSeed = '6Kp7ThQnDcwDrImLpJt0GB';
+        $seeds = $this->getSpotifySearch($userToken);
         $energy = '0.5';
         $instrumentalness = '0.5';
         $liveness = '0.5';
         $popularity = '50';
         $tempo = '100';
-        $recoLink = sprintf('recommendations?limit=%s&market=FR&seed_artists=%s&seed_tracks=%s&target_energy=%s&target_instrumentalness=%s&target_liveness=%s&target_popularity=%s&target_tempo=%s',
-        $limit, $artistSeed,$trackSeed,$energy,$instrumentalness,$liveness,$popularity,$tempo);
+        $recoLink = sprintf(
+            'recommendations?limit=%s&market=FR&%s&target_energy=%s&target_instrumentalness=%s&target_liveness=%s&target_popularity=%s&target_tempo=%s',
+            $limit,
+            $seeds,
+            $energy,
+            $instrumentalness,
+            $liveness,
+            $popularity,
+            $tempo
+        );
         $requestReco = $this->getHttpClient($userToken,$recoLink);
 
-        return json_decode($requestReco->getContent(),true);
+        $jsonData = json_decode($requestReco->getContent(),true);
+        $tracksList = '';
+        foreach ($jsonData['tracks'] as $track) {
+            $tracksList .= sprintf('%s,', $track['uri']);
+        }
+
+        return $tracksList;
     }
-    public function getSpotifyAddItem(): array{
-        $track = 'spotify:track:33jnIhEmkDWRNGDqBTv9LP';
+    public function getSpotifyAddItem(MellowUser $userToken, string $userTokenString): array{
+        $track = $this->getSpotifyReco($userTokenString);
         $data = sprintf('https://api.spotify.com/v1/playlists/0BGUl8SqpAcraHvWO2Kp16/tracks?uris=%s',$track);
 
         $addItemRequest = $this->httpClient->request('POST',$data, [
             'headers' =>[
                 'Accept' => 'application/json',
-                'Authorization' => 'Bearer BQAowEHxSNq9WTb-gWdHAkLZG2_ekZsm5X_YLNnCxLZh2ApsBzK5Rwep-sCw7i7_wzLCa0WAygyADmRZGVLTf_RuMiFLABaYie8SoG8ek2Zcuagt248syMvcCmd4PjGz3TksXKB_61WmLgTJw-haoCtaaXd1XhBigsGYLMxthpYlDUoVS9Uuo4jG1ucYdzmsaQuIo9MjGswsTrpq3ds-uzEUSSa0aT8Z',
+                'Authorization' => sprintf('Bearer %s', $userTokenString),
                 'Content-Type' => 'application/json',
             ]
         ]);
         return json_decode($addItemRequest->getContent(), true);
     }
-   /* public function StoreTokenUser(): array {
-        $requestMe = $this->getSpotifyMe();
-        $spotifyToken = [];
-        $existingToken = $this->entityManager->getRepository(MellowUserRepository::class)->findOneByNotionId($page['id']);
-    }*/
+
     public function storeUser($user_token): MellowUser
     {
         $me = $this->getSpotifyMe($user_token);
 
-        $frontToken = substr(sha1($me['id']), 0, 64);
+        $frontToken = substr(sha1($user_token), 0, 64);
 
         $user = new MellowUser();
         $user->setUserToken($user_token)
@@ -130,27 +137,6 @@ class SpotifyService
         return $user;
     }
 
-    public function getNotionPage(): array
-    {
-
-        $spotifyBaseUrl = $this->parameterBag->get('base_url');
-        $client_id = $this->parameterBag->get('client_id');
-
-        /*$notionSearchUrl = sprintf('%s/search', $spotifyBaseUrl);
-        $authorizationHeader = sprintf('Bearer %s', $client_id);
-
-        $pages = $this->httpClient->request('POST', $notionSearchUrl, [
-            'body' => [
-                'query' => '',
-            ],
-            'headers' => [
-                'Authorization' => $authorizationHeader,
-                'Notion-version' => "2021-08-16",
-            ],
-        ]);
-
-        return json_decode($pages->getContent(), true);*/
-    }
     public function StoreToken(): array {
         $pages = $this->getNotionPage();
 

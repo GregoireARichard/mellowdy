@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\MellowUser;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +29,7 @@ class UserService
         // string: Bearer $token
         //$token = explode('%20', $authorizationHeader)[1];
         $token = explode(' ', $authorizationHeader)[1];
-        return $this->entityManager->getRepository(User::class)->findOneByFrontToken($token);
+        return $this->entityManager->getRepository(MellowUser::class)->findOneByFrontToken($token);
     }
 
 }
