@@ -50,8 +50,8 @@ class SpotifyService
     }
 
     public function getSpotifySearch(string $userToken):string {
-        $track = 'Thriller';
-        $artist = 'Michael Jackson';
+        $track = 'детство';
+        $artist = 'Rauf & faik';
         $limit = "2";
         $searchLink = sprintf("search?q=%s %s&type=track&market=FR&limit=%s",$artist,$track,$limit);
         $requestSearch = $this->getHttpClient($userToken,$searchLink);
@@ -63,8 +63,7 @@ class SpotifyService
         return $associatedQuery;
     }
 
-    public function getSpotifyPlaylist( MellowUser $user): array{
-
+    public function getSpotifyPlaylist( MellowUser $user): string{
         $sprintUser = sprintf('https://api.spotify.com/v1/users/%s/playlists', $user->getUsername());
         $data = '{"name": "Your Mellowdy Playlist", "description": "Your Mellowdy playlist ;)", "public": true}';
         $requestPlaylist = $this->httpClient->request('POST', $sprintUser,[
@@ -72,14 +71,13 @@ class SpotifyService
                 'Content-Type' => 'application/json',
                 'Authorization' => sprintf('Bearer %s', $user->getUserToken())
             ],
-            'json' => $data
+            'body' => $data
         ]);
-        return json_decode($requestPlaylist->getContent(),true);
+        $playlistId = json_decode($requestPlaylist->getContent(),true);
+        return $playlistId['id'];
     }
     public function getSpotifyReco(string $userToken): string {
         $limit = '10';
-        $artistSeed = '3xWktqKQxBAu4LXqLufJwW';
-        $trackSeed = '6Kp7ThQnDcwDrImLpJt0GB';
         $seeds = $this->getSpotifySearch($userToken);
         $energy = '0.5';
         $instrumentalness = '0.5';
@@ -108,7 +106,8 @@ class SpotifyService
     }
     public function getSpotifyAddItem(MellowUser $userToken, string $userTokenString): array{
         $track = $this->getSpotifyReco($userTokenString);
-        $data = sprintf('https://api.spotify.com/v1/playlists/0BGUl8SqpAcraHvWO2Kp16/tracks?uris=%s',$track);
+        $playlistId = $this->getSpotifyPlaylist($userToken);
+        $data = sprintf('https://api.spotify.com/v1/playlists/%s/tracks?uris=%s',$playlistId,$track);
 
         $addItemRequest = $this->httpClient->request('POST',$data, [
             'headers' =>[
@@ -137,38 +136,4 @@ class SpotifyService
         return $user;
     }
 
-    public function StoreToken(): array {
-        $pages = $this->getNotionPage();
-
-        $notionPages = [];
-
-        foreach($pages['results'] as $page)
-        {
-            $existingNotionPage = $this->entityManager->getRepository(NotionPage::class)->findOneByNotionId($page['id']);
-
-            if (null !== $existingNotionPage) {
-                continue;
-            }
-            $notionPage = new NotionPage();
-            if ( isset($page['properties']['title']) ) {
-                $title = substr($page['properties']['title']['title'][0]['plain_text'], 0, 255);
-            } else {
-                $title = 'No title';
-            }
-
-            $creationDate = new \DateTime($page['created_time']);
-
-            $notionPage->setTitle($title);
-            $notionPage->setNotionId($page['id']);
-            $notionPage->setCreationDate($creationDate);
-
-            $this->entityManager->persist($notionPage);
-            $notionPages[] = $notionPage;
-        }
-
-        $this->entityManager->flush();
-
-
-        return $notionPages;
-    }
 }

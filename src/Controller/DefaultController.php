@@ -77,23 +77,13 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $request->headers->set('Authorization', 'Bearer 4268616fd1f7c46f445d009c28cbf31025fc127d');
+        $request->headers->set('Authorization', 'Bearer bbe3d743aed8be5a9772d2c4c30e52aa97eef8f8');
         /** @var MellowUser $user */
         $user = $this->userService->getUserFromRequest($request);
         if (null === $user) {
             return new Response('Unauthorized', 401);
         }
-        //$return = $this->spotifyService->getSpotifyReco($user);
-       // $return = $this->spotifyService->getSpotifyReco($user->getUserToken());
-
-        //$playlists = $this->spotifyService->getSpotifyPlaylist($user);
-        //$return = $this->spotifyService->getSpotifySearch($user->getUserToken());
-        //$this->spotifyService->storeUser();
-
          $return = $this->spotifyService->getSpotifyAddItem($user, $user->getUserToken());
-        //$this->spotifyService->getSpotifyReco($token);
-        //return $this->json($return['tracks']['items'][0]['uri']);
-       //$returnq = $this->spotifyService->getSpotifyAddItem($user->getUserToken());
        return $this->json($return);
 
 
@@ -201,44 +191,6 @@ class DefaultController extends AbstractController
         return $this->json($returnArray);
     }
 
-    /**
-     * @Route("/login", name="login")
-     */
-    public function login(Request $request): Response
-    {
-        $params = json_decode($request->getContent(), true);
-
-        if (!isset($params['username']) || empty($params['username'])) {
-            throw new HttpException(400, 'Missing username parameter.');
-        }
-
-        if (!isset($params['email']) || empty($params['email'])) {
-            throw new HttpException(400, 'Missing email parameter.');
-        }
-
-        $entityManager = $this->getDoctrine()->getManager();
-
-        $user = $entityManager->getRepository(User::class)->findOneByEmail($params['email']);
-
-        if (null === $user) {
-            $user = new User();
-        }
-
-        $user->setUsername($params['username'])
-            ->setEmail($params['email'])
-        ;
-
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        $returnArray = [
-            'id' => $user->getId(),
-            'username' => $user->getUsername(),
-            'email' => $user->getEmail(),
-        ];
-
-        return $this->json($returnArray);
-    }
 
     /**
      * @Route("/error", name="error")
