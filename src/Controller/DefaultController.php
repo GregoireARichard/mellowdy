@@ -77,7 +77,7 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $request->headers->set('Authorization', 'Bearer bbe3d743aed8be5a9772d2c4c30e52aa97eef8f8');
+        $request->headers->set('Authorization', 'Bearer 43de9df891101f2a8eaca91225be187d978cdab7');
         /** @var MellowUser $user */
         $user = $this->userService->getUserFromRequest($request);
         if (null === $user) {
