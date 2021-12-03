@@ -35,6 +35,11 @@ class MellowUser
      */
     private $UserToken;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $frontToken;
+
     public function __construct()
     {
         $this->Playlists = new ArrayCollection();
@@ -96,6 +101,18 @@ class MellowUser
     public function setUserToken(string $UserToken): self
     {
         $this->UserToken = $UserToken;
+
+        return $this;
+    }
+
+    public function getFrontToken(): ?string
+    {
+        return $this->frontToken;
+    }
+
+    public function setFrontToken(string $frontToken): self
+    {
+        $this->frontToken = $frontToken;
 
         return $this;
     }
