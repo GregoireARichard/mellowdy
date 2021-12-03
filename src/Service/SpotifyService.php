@@ -50,14 +50,14 @@ class SpotifyService
     }
 
     public function getSpotifySearch(string $userToken):string {
-        $track = 'детство';
-        $artist = 'Rauf & faik';
+        $track = 'Ms Rona';
+        $artist = 'Praxi';
         $limit = "2";
         $searchLink = sprintf("search?q=%s %s&type=track&market=FR&limit=%s",$artist,$track,$limit);
         $requestSearch = $this->getHttpClient($userToken,$searchLink);
 
         $query = json_decode($requestSearch->getContent(), true);
-        $artistSeeds = $query['tracks']['items'][0]['artists']['0']['id'];
+        $artistSeeds = $query['tracks']['items'][0]['artists'][0]['id'];
         $trackSeed = $query['tracks']['items'][0]['id'];
         $associatedQuery = sprintf('seed_artists=%s&seed_tracks=%s',$artistSeeds,$trackSeed);
         return $associatedQuery;
