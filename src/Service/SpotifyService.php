@@ -50,8 +50,8 @@ class SpotifyService
     }
 
     public function getSpotifySearch(string $userToken):string {
-        $track = 'Ms Rona';
-        $artist = 'Praxi';
+        $track = 'Smoke on the water';
+        $artist = 'Deep purple';
         $limit = "2";
         $searchLink = sprintf("search?q=%s %s&type=track&market=FR&limit=%s",$artist,$track,$limit);
         $requestSearch = $this->getHttpClient($userToken,$searchLink);
