@@ -111,7 +111,8 @@ class DefaultController extends AbstractController
      */
     public function exchange_token(Request $request): Response{
         $authorization_code = $request->get('code');
-        $client_secret = $this->parameterBag->get('client_secret');
+        //$client_secret = $this->parameterBag->get('client_secret');
+        $client_secret =  'e537d899f2b84318942fea52e41d9428';
         try {
             $basicAuth = base64_encode(sprintf('%s:%s',  '47fcde357cd7454088ed5b0bf054c823', $client_secret));
             $header = [
