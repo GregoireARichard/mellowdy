@@ -5,8 +5,6 @@ namespace App\Controller;
 use App\Entity\MellowUser;
 use App\Entity\NotionPage;
 use App\Entity\User;
-//use App\Repository\MellowUserRepository;
-use App\Service\NotionService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Service\SpotifyService;
@@ -77,14 +75,16 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $request->headers->set('Authorization', 'Bearer 43de9df891101f2a8eaca91225be187d978cdab7');
+        $jsonData = json_decode($request->getContent(), true);
+
         /** @var MellowUser $user */
+
         $user = $this->userService->getUserFromRequest($request);
         if (null === $user) {
             return new Response('Unauthorized', 401);
         }
-         $return = $this->spotifyService->getSpotifyAddItem($user, $user->getUserToken());
-       return $this->json($return);
+        return $this->json($this->spotifyService->getSpotifyAddItem($user, $user->getUserToken()));
+
 
 
     }
@@ -94,7 +94,7 @@ class DefaultController extends AbstractController
     public function oauth(): Response
     {
        $client_id = '47fcde357cd7454088ed5b0bf054c823';
-       $location = 'http://127.0.0.1:8080/exchange_token';
+       $location = 'https://mellow-dy.tinker.ovh/exchange_token';
        $scope = 'user-read-playback-state playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public';
 
        $oauth_string = sprintf(
@@ -123,7 +123,7 @@ class DefaultController extends AbstractController
                 'client_secret' => $client_secret,
                 'code' => $authorization_code,
                 'grant_type' => 'authorization_code',
-                'redirect_uri' =>'http://127.0.0.1:8080/exchange_token',
+                'redirect_uri' =>'https://mellow-dy.tinker.ovh/exchange_token',
             ];
 
             $response = $this->httpClient->request(
@@ -147,10 +147,15 @@ class DefaultController extends AbstractController
 
         $user_token = $json_response['access_token'];
         $this->spotifyService->storeUser($user_token);
-        return $this->json($json_response);
+        //return $this->json($json_response);
+        //return $this->redirect('localhost:3000?frontToken');
         // Redirect to front-end with front token as a query param
         // localhost:3000/?frontToken=xxxxx
         //return $this->redirect('/');
+        //$frontToken = $this->entityManager->getRepository(MellowUser::class)->findOneByFrontToken('front_token');
+        $frontToken = substr(sha1($user_token),0,64);
+        return $this->redirect(sprintf('https://pedantic-booth-c38e89.netlify.app/frontToken?token=%s',$frontToken));
+        //return var_dump($frontToken);
 
     }
 
@@ -167,28 +172,6 @@ class DefaultController extends AbstractController
         $this->spotifyService->getSpotifyMe($user->getToken());
 
         return $this->json('');
-    }
-
-    /**
-     * @Route("/notionpages", name="notionPage")
-     */
-    public function getNotionPages(): Response
-    {
-        $pages = $this->getDoctrine()->getRepository(NotionPage::class)->findAll();
-
-        $returnArray = [];
-
-        /** @var NotionPages $page */
-        foreach ($pages as $page) {
-            $returnArray[] = [
-                'id' => $page->getId(),
-                'notionId' => $page->getNotionId(),
-                'title' => $page->getTitle(),
-                'creationDate' => $page->getCreationDate()->format(DATE_ATOM),
-            ];
-        }
-
-        return $this->json($returnArray);
     }
 
 

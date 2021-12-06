@@ -50,12 +50,14 @@ class SpotifyService
     }
 
     public function getSpotifySearch(string $userToken):string {
-        $track = 'Ms Rona';
-        $artist = 'Praxi';
+        $requestUrl = $_SERVER['REQUEST_URI'];
+        $url_component = parse_url($requestUrl);
+        parse_str($url_component['query'], $params);
+        $track = $params['artist'];
+        $artist = $params['track'];
         $limit = "2";
         $searchLink = sprintf("search?q=%s %s&type=track&market=FR&limit=%s",$artist,$track,$limit);
         $requestSearch = $this->getHttpClient($userToken,$searchLink);
-
         $query = json_decode($requestSearch->getContent(), true);
         $artistSeeds = $query['tracks']['items'][0]['artists'][0]['id'];
         $trackSeed = $query['tracks']['items'][0]['id'];
@@ -77,13 +79,16 @@ class SpotifyService
         return $playlistId['id'];
     }
     public function getSpotifyReco(string $userToken): string {
-        $limit = '10';
+        $requestUrl = $_SERVER['REQUEST_URI'];
+        $url_component = parse_url($requestUrl);
+        parse_str($url_component['query'], $params);
+        $limit = $params['limit'];
         $seeds = $this->getSpotifySearch($userToken);
-        $energy = '0.5';
-        $instrumentalness = '0.5';
-        $liveness = '0.5';
-        $popularity = '50';
-        $tempo = '100';
+        $energy = $params['energy'];
+        $instrumentalness = $params['instrumentalness'];
+        $liveness = $params['liveness'];
+        $popularity = $params['popularity'];
+        $tempo = $params['tempo'];
         $recoLink = sprintf(
             'recommendations?limit=%s&market=FR&%s&target_energy=%s&target_instrumentalness=%s&target_liveness=%s&target_popularity=%s&target_tempo=%s',
             $limit,
