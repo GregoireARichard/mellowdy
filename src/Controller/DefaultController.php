@@ -147,15 +147,8 @@ class DefaultController extends AbstractController
 
         $user_token = $json_response['access_token'];
         $this->spotifyService->storeUser($user_token);
-        //return $this->json($json_response);
-        //return $this->redirect('localhost:3000?frontToken');
-        // Redirect to front-end with front token as a query param
-        // localhost:3000/?frontToken=xxxxx
-        //return $this->redirect('/');
-        //$frontToken = $this->entityManager->getRepository(MellowUser::class)->findOneByFrontToken('front_token');
         $frontToken = substr(sha1($user_token),0,64);
         return $this->redirect(sprintf('https://pedantic-booth-c38e89.netlify.app/frontToken?token=%s',$frontToken));
-        //return var_dump($frontToken);
 
     }
 
