@@ -75,15 +75,16 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $request->headers->set('Authorization', 'Bearer 6ec9c464487dd4569c3c00a8c7fab2fbb37c70b6');
+        $jsonData = json_decode($request->getContent(), true);
+
         /** @var MellowUser $user */
+
         $user = $this->userService->getUserFromRequest($request);
         if (null === $user) {
-            new Response('Unauthorized', 401);
-
+            return new Response('Unauthorized', 401);
         }
-         $return = $this->spotifyService->getSpotifyAddItem($user, $user->getUserToken());
-       return $this->json($return);
+        return $this->json($this->spotifyService->getSpotifyAddItem($user, $user->getUserToken()));
+
 
 
     }
@@ -93,7 +94,7 @@ class DefaultController extends AbstractController
     public function oauth(): Response
     {
        $client_id = '47fcde357cd7454088ed5b0bf054c823';
-       $location = 'http://127.0.0.1:8080/exchange_token';
+       $location = 'https://mellow-dy.tinker.ovh/exchange_token';
        $scope = 'user-read-playback-state playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public';
 
        $oauth_string = sprintf(
@@ -122,7 +123,7 @@ class DefaultController extends AbstractController
                 'client_secret' => $client_secret,
                 'code' => $authorization_code,
                 'grant_type' => 'authorization_code',
-                'redirect_uri' =>'http://127.0.0.1:8080/exchange_token',
+                'redirect_uri' =>'https://mellow-dy.tinker.ovh/exchange_token',
             ];
 
             $response = $this->httpClient->request(
@@ -150,10 +151,10 @@ class DefaultController extends AbstractController
         //return $this->redirect('localhost:3000?frontToken');
         // Redirect to front-end with front token as a query param
         // localhost:3000/?frontToken=xxxxx
-       //return $this->redirect('/');
+        //return $this->redirect('/');
         //$frontToken = $this->entityManager->getRepository(MellowUser::class)->findOneByFrontToken('front_token');
         $frontToken = substr(sha1($user_token),0,64);
-        return $this->redirect(sprintf('http://localhost:3000/?frontToken=%s',$frontToken));
+        return $this->redirect(sprintf('https://pedantic-booth-c38e89.netlify.app/frontToken?token=%s',$frontToken));
         //return var_dump($frontToken);
 
     }
@@ -172,7 +173,7 @@ class DefaultController extends AbstractController
 
         return $this->json('');
     }
-    
+
 
     /**
      * @Route("/error", name="error")
