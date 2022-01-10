@@ -148,7 +148,7 @@ class DefaultController extends AbstractController
         $user_token = $json_response['access_token'];
         $this->spotifyService->storeUser($user_token);
         $frontToken = substr(sha1($user_token),0,64);
-        return $this->redirect(sprintf('mellowdy.fr/frontToken?token=%s',$frontToken));
+        return $this->redirect(sprintf('https://mellowdy.fr/frontToken?token=%s',$frontToken));
 
     }
 
