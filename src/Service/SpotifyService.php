@@ -67,7 +67,7 @@ class SpotifyService
 
     public function getSpotifyPlaylist( MellowUser $user): string{
         $sprintUser = sprintf('https://api.spotify.com/v1/users/%s/playlists', $user->getUsername());
-        $data = '{"name": "Your Mellowdy Playlist", "description": "Your Mellowdy playlist ;)", "public": true}';
+        $data = '{"name": "Your Mellowdy Playlist", "description": "Your Mellowdy playlist by https://mellowdy.fr ;)", "public": true}';
         $requestPlaylist = $this->httpClient->request('POST', $sprintUser,[
             'headers' =>[
                 'Content-Type' => 'application/json',
