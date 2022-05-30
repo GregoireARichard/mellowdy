@@ -94,7 +94,7 @@ class DefaultController extends AbstractController
     public function oauth(): Response
     {
        $client_id = '47fcde357cd7454088ed5b0bf054c823';
-       $location = 'https://mellow-dy.tinker.ovh/exchange_token';
+       $location = 'https://api.mellowdy.fr/exchange_token';
        $scope = 'user-read-playback-state playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public';
 
        $oauth_string = sprintf(
@@ -123,7 +123,7 @@ class DefaultController extends AbstractController
                 'client_secret' => $client_secret,
                 'code' => $authorization_code,
                 'grant_type' => 'authorization_code',
-                'redirect_uri' =>'https://mellow-dy.tinker.ovh/exchange_token',
+                'redirect_uri' =>'https://api.mellowdy.fr/exchange_token',
             ];
 
             $response = $this->httpClient->request(
